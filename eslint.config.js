@@ -41,4 +41,22 @@ export default tseslint.config(
       ],
     },
   },
+  {
+    // Composants générés/gérés par la CLI shadcn (`npx shadcn add ...`) :
+    // code vendored, pas écrit à la main, régénéré tel quel lors des mises à
+    // jour. On y relâche les règles trop strictes pour ne pas diverger de
+    // l'upstream ni bloquer les commits sur du code qu'on ne réécrit pas.
+    files: ['src/components/ui/**/*.{ts,tsx}', 'src/hooks/use-mobile.ts'],
+    rules: {
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/no-unsafe-member-access': 'off',
+      '@typescript-eslint/no-unsafe-argument': 'off',
+      '@typescript-eslint/restrict-template-expressions': 'off',
+      '@typescript-eslint/no-unnecessary-type-assertion': 'off',
+      '@typescript-eslint/consistent-type-definitions': 'off',
+      'jsx-a11y/label-has-associated-control': 'off',
+      'react-hooks/set-state-in-effect': 'off',
+      'react-refresh/only-export-components': 'off',
+    },
+  },
 )
