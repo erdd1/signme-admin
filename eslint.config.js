@@ -59,4 +59,10 @@ export default tseslint.config(
       'react-refresh/only-export-components': 'off',
     },
   },
+  {
+    files: ['**/*.test.{ts,tsx}', 'src/core/config/vitest.setup.ts'],
+    languageOptions: {
+      globals: globals.vitest,
+    },
+  },
 )
