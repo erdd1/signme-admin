@@ -1,5 +1,6 @@
-import { LayoutDashboard, LogOut, ShieldCheck } from 'lucide-react'
+import { LayoutDashboard, LogOut, ShieldAlert, ShieldCheck, UserCog } from 'lucide-react'
 import { NavLink, Outlet, useNavigate } from 'react-router'
+import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -16,18 +17,32 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from '@/components/ui/sidebar'
+import { useLogout } from '@/features/auth/hooks/useLogin'
 import { useAuthStore } from '@/features/auth/store/authStore'
 
-const navItems = [{ label: 'Tableau de bord', to: '/', icon: LayoutDashboard }]
+const navItems = [
+  { label: 'Tableau de bord', to: '/', icon: LayoutDashboard },
+  { label: 'Mon compte', to: '/compte', icon: UserCog },
+  { label: 'Sécurité', to: '/securite', icon: ShieldAlert },
+]
 
 export function AdminLayout() {
   const user = useAuthStore((state) => state.user)
   const clearSession = useAuthStore((state) => state.clear)
+  const logout = useLogout()
   const navigate = useNavigate()
 
-  function handleLogout() {
-    clearSession()
-    void navigate('/login', { replace: true })
+  async function handleLogout() {
+    try {
+      await logout.mutateAsync()
+    } catch {
+      // Déconnexion locale malgré tout : mieux vaut un faux positif réseau
+      // qu'un admin bloqué connecté.
+      toast.error('La déconnexion côté serveur a échoué, session locale effacée.')
+    } finally {
+      clearSession()
+      void navigate('/login', { replace: true })
+    }
   }
 
   return (
@@ -62,7 +77,12 @@ export function AdminLayout() {
           <SidebarTrigger />
           <div className="flex items-center gap-3">
             {user && <span className="text-muted-foreground text-sm">{user.nom}</span>}
-            <Button variant="ghost" size="sm" onClick={handleLogout}>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => void handleLogout()}
+              disabled={logout.isPending}
+            >
               <LogOut />
               Se déconnecter
             </Button>

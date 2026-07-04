@@ -1,5 +1,6 @@
 import axios, { AxiosError, type InternalAxiosRequestConfig } from 'axios'
 
+import { isMfaSetupRequiredError } from '@/core/api/errors'
 import type { ApiEnvelope } from '@/core/api/types'
 import { env } from '@/core/config/env'
 import { useAuthStore } from '@/features/auth/store/authStore'
@@ -48,6 +49,13 @@ httpClient.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
     const originalRequest = error.config as RetryableConfig | undefined
+
+    // Le backend bloque tout /admin/* (hors /admin/auth/*) tant que le MFA
+    // n'est pas confirmé — on répercute l'info dans le store pour que le
+    // MfaGuard force la redirection même si l'état local était périmé.
+    if (error.response?.status === 403 && isMfaSetupRequiredError(error)) {
+      useAuthStore.getState().setMfaSetupRequired(true)
+    }
 
     if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
       originalRequest._retry = true
