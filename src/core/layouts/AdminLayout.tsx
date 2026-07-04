@@ -1,4 +1,4 @@
-import { LayoutDashboard, LogOut, ShieldAlert, ShieldCheck, UserCog } from 'lucide-react'
+import { LayoutDashboard, LogOut, ShieldAlert, ShieldCheck, UserCog, Users } from 'lucide-react'
 import { NavLink, Outlet, useNavigate } from 'react-router'
 import { toast } from 'sonner'
 
@@ -22,6 +22,7 @@ import { useAuthStore } from '@/features/auth/store/authStore'
 
 const navItems = [
   { label: 'Tableau de bord', to: '/', icon: LayoutDashboard },
+  { label: 'Utilisateurs', to: '/utilisateurs', icon: Users },
   { label: 'Mon compte', to: '/compte', icon: UserCog },
   { label: 'Sécurité', to: '/securite', icon: ShieldAlert },
 ]
