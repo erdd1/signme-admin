@@ -11,6 +11,8 @@ import { LoginPage } from '@/features/auth/pages/LoginPage'
 import { MfaSetupPage } from '@/features/auth/pages/MfaSetupPage'
 import { SecurityPage } from '@/features/auth/pages/SecurityPage'
 import { DashboardPage } from '@/features/dashboard/pages/DashboardPage'
+import { ContributionPaymentsPage } from '@/features/payments/contributions/pages/ContributionPaymentsPage'
+import { SignaturePaymentsPage } from '@/features/payments/signatures/pages/SignaturePaymentsPage'
 import { UsersListPage } from '@/features/users/pages/UsersListPage'
 
 import { NotFoundPage } from './NotFoundPage'
@@ -38,6 +40,8 @@ export function AppRouter() {
               <Route element={<AdminLayout />}>
                 <Route index element={<DashboardPage />} />
                 <Route path="/utilisateurs" element={<UsersListPage />} />
+                <Route path="/paiements/signatures" element={<SignaturePaymentsPage />} />
+                <Route path="/paiements/contributions" element={<ContributionPaymentsPage />} />
                 <Route path="/compte" element={<AccountPage />} />
                 <Route path="/securite" element={<SecurityPage />} />
               </Route>

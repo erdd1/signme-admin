@@ -1,5 +1,15 @@
-import { LayoutDashboard, LogOut, ShieldAlert, ShieldCheck, UserCog, Users } from 'lucide-react'
-import { NavLink, Outlet, useNavigate } from 'react-router'
+import {
+  ChevronRight,
+  CreditCard,
+  LayoutDashboard,
+  LogOut,
+  ShieldAlert,
+  ShieldCheck,
+  UserCog,
+  Users,
+} from 'lucide-react'
+import { useState } from 'react'
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router'
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
@@ -14,17 +24,29 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
   SidebarProvider,
   SidebarTrigger,
 } from '@/components/ui/sidebar'
 import { useLogout } from '@/features/auth/hooks/useLogin'
 import { useAuthStore } from '@/features/auth/store/authStore'
+import { cn } from '@/lib/utils'
 
-const navItems = [
+const topNavItems = [
   { label: 'Tableau de bord', to: '/', icon: LayoutDashboard },
   { label: 'Utilisateurs', to: '/utilisateurs', icon: Users },
+]
+
+const bottomNavItems = [
   { label: 'Mon compte', to: '/compte', icon: UserCog },
   { label: 'Sécurité', to: '/securite', icon: ShieldAlert },
+]
+
+const paymentsSubItems = [
+  { label: 'Signatures', to: '/paiements/signatures' },
+  { label: 'Contributions', to: '/paiements/contributions' },
 ]
 
 export function AdminLayout() {
@@ -32,6 +54,8 @@ export function AdminLayout() {
   const clearSession = useAuthStore((state) => state.clear)
   const logout = useLogout()
   const navigate = useNavigate()
+  const location = useLocation()
+  const [paymentsOpen, setPaymentsOpen] = useState(location.pathname.startsWith('/paiements'))
 
   async function handleLogout() {
     try {
@@ -60,7 +84,37 @@ export function AdminLayout() {
             <SidebarGroupLabel>Navigation</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
-                {navItems.map(({ label, to, icon: Icon }) => (
+                {topNavItems.map(({ label, to, icon: Icon }) => (
+                  <SidebarMenuItem key={to}>
+                    <SidebarMenuButton render={<NavLink to={to} end />}>
+                      <Icon />
+                      <span>{label}</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+
+                <SidebarMenuItem>
+                  <SidebarMenuButton onClick={() => setPaymentsOpen((open) => !open)}>
+                    <CreditCard />
+                    <span>Paiements</span>
+                    <ChevronRight
+                      className={cn('ml-auto transition-transform', paymentsOpen && 'rotate-90')}
+                    />
+                  </SidebarMenuButton>
+                  {paymentsOpen && (
+                    <SidebarMenuSub>
+                      {paymentsSubItems.map((item) => (
+                        <SidebarMenuSubItem key={item.to}>
+                          <SidebarMenuSubButton render={<NavLink to={item.to} />}>
+                            <span>{item.label}</span>
+                          </SidebarMenuSubButton>
+                        </SidebarMenuSubItem>
+                      ))}
+                    </SidebarMenuSub>
+                  )}
+                </SidebarMenuItem>
+
+                {bottomNavItems.map(({ label, to, icon: Icon }) => (
                   <SidebarMenuItem key={to}>
                     <SidebarMenuButton render={<NavLink to={to} end />}>
                       <Icon />
