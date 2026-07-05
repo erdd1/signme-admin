@@ -47,6 +47,52 @@ export interface GroupeRef {
   nom: string
 }
 
+/** Forme complète d'un Quartier (au-delà du QuartierRef minimal des dropdowns) */
+export interface Quartier {
+  id: number
+  uuid: string
+  nom: string
+  churchId: number
+  createdBy: number | null
+  createdAt: string
+  updatedAt: string
+}
+
+/** Forme brute renvoyée par GET /admin/quartiers */
+export interface QuartierResponseData {
+  id: number
+  uuid: string
+  nom: string
+  churchId: number
+  createdBy: number | null
+  created_at: string
+  updated_at: string
+}
+
+export type Groupe = Quartier
+export type GroupeResponseData = QuartierResponseData
+
+export interface Ville extends Quartier {
+  estDiaspora: boolean
+}
+
+export interface VilleResponseData extends QuartierResponseData {
+  estDiaspora: boolean
+}
+
+export interface CreateQuartierPayload {
+  nom: string
+  churchId: number
+}
+
+export type CreateGroupePayload = CreateQuartierPayload
+
+export interface CreateVillePayload {
+  nom: string
+  estDiaspora: boolean
+  churchId: number
+}
+
 export interface User {
   id: number
   nom: string

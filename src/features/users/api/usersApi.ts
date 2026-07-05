@@ -3,14 +3,20 @@ import type { ApiEnvelope, PaginatedEnvelope, PaginationMeta } from '@/core/api/
 import type {
   Church,
   ChurchResponseData,
+  CreateGroupePayload,
+  CreateQuartierPayload,
   CreateUserPayload,
-  GroupeRef,
-  QuartierRef,
+  CreateVillePayload,
+  Groupe,
+  GroupeResponseData,
+  Quartier,
+  QuartierResponseData,
   UpdateUserPayload,
   User,
   UserFilters,
   UserResponseData,
-  VilleRef,
+  Ville,
+  VilleResponseData,
 } from '@/features/users/types'
 
 function mapUser(u: UserResponseData): User {
@@ -177,23 +183,73 @@ export async function getChurches(): Promise<Church[]> {
   return data.data.map(mapChurch)
 }
 
-export async function getQuartiers(churchId: number): Promise<QuartierRef[]> {
-  const { data } = await httpClient.get<ApiEnvelope<QuartierRef[]>>('/admin/quartiers', {
-    params: { church_id: churchId },
-  })
-  return data.data
+function mapQuartier(q: QuartierResponseData): Quartier {
+  return {
+    id: q.id,
+    uuid: q.uuid,
+    nom: q.nom,
+    churchId: q.churchId,
+    createdBy: q.createdBy,
+    createdAt: q.created_at,
+    updatedAt: q.updated_at,
+  }
 }
 
-export async function getVilles(churchId: number): Promise<VilleRef[]> {
-  const { data } = await httpClient.get<ApiEnvelope<VilleRef[]>>('/admin/villes', {
-    params: { church_id: churchId },
-  })
-  return data.data
+function mapGroupe(g: GroupeResponseData): Groupe {
+  return mapQuartier(g)
 }
 
-export async function getGroupes(churchId: number): Promise<GroupeRef[]> {
-  const { data } = await httpClient.get<ApiEnvelope<GroupeRef[]>>('/admin/groupes', {
+function mapVille(v: VilleResponseData): Ville {
+  return { ...mapQuartier(v), estDiaspora: v.estDiaspora }
+}
+
+export async function getQuartiers(churchId: number): Promise<Quartier[]> {
+  const { data } = await httpClient.get<ApiEnvelope<QuartierResponseData[]>>('/admin/quartiers', {
     params: { church_id: churchId },
   })
-  return data.data
+  return data.data.map(mapQuartier)
+}
+
+export async function createQuartier(payload: CreateQuartierPayload): Promise<Quartier> {
+  const { data } = await httpClient.post<ApiEnvelope<QuartierResponseData>>(
+    '/admin/quartiers',
+    payload,
+  )
+  return mapQuartier(data.data)
+}
+
+export async function deleteQuartier(id: number): Promise<void> {
+  await httpClient.delete(`/admin/quartiers/${id}`)
+}
+
+export async function getVilles(churchId: number): Promise<Ville[]> {
+  const { data } = await httpClient.get<ApiEnvelope<VilleResponseData[]>>('/admin/villes', {
+    params: { church_id: churchId },
+  })
+  return data.data.map(mapVille)
+}
+
+export async function createVille(payload: CreateVillePayload): Promise<Ville> {
+  const { data } = await httpClient.post<ApiEnvelope<VilleResponseData>>('/admin/villes', payload)
+  return mapVille(data.data)
+}
+
+export async function deleteVille(id: number): Promise<void> {
+  await httpClient.delete(`/admin/villes/${id}`)
+}
+
+export async function getGroupes(churchId: number): Promise<Groupe[]> {
+  const { data } = await httpClient.get<ApiEnvelope<GroupeResponseData[]>>('/admin/groupes', {
+    params: { church_id: churchId },
+  })
+  return data.data.map(mapGroupe)
+}
+
+export async function createGroupe(payload: CreateGroupePayload): Promise<Groupe> {
+  const { data } = await httpClient.post<ApiEnvelope<GroupeResponseData>>('/admin/groupes', payload)
+  return mapGroupe(data.data)
+}
+
+export async function deleteGroupe(id: number): Promise<void> {
+  await httpClient.delete(`/admin/groupes/${id}`)
 }

@@ -1,5 +1,6 @@
 import {
   ChevronRight,
+  Church,
   CreditCard,
   LayoutDashboard,
   LogOut,
@@ -36,6 +37,7 @@ import { cn } from '@/lib/utils'
 
 const topNavItems = [
   { label: 'Tableau de bord', to: '/', icon: LayoutDashboard },
+  { label: 'Églises', to: '/eglises', icon: Church },
   { label: 'Utilisateurs', to: '/utilisateurs', icon: Users },
 ]
 

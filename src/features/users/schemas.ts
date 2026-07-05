@@ -57,3 +57,17 @@ export type CreateUserFormValues = z.infer<typeof createUserSchema>
 
 export const updateUserSchema = z.object(baseUserFields).superRefine(refineGroupePrincipal)
 export type UpdateUserFormValues = z.infer<typeof updateUserSchema>
+
+export const createQuartierSchema = z.object({
+  nom: z.string().min(1, 'Le nom est obligatoire').max(150),
+})
+export type CreateQuartierFormValues = z.infer<typeof createQuartierSchema>
+
+export const createGroupeSchema = createQuartierSchema
+export type CreateGroupeFormValues = CreateQuartierFormValues
+
+export const createVilleSchema = z.object({
+  nom: z.string().min(1, 'Le nom est obligatoire').max(150),
+  estDiaspora: z.boolean(),
+})
+export type CreateVilleFormValues = z.infer<typeof createVilleSchema>

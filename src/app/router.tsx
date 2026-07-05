@@ -10,6 +10,8 @@ import { ForgotPasswordPage } from '@/features/auth/pages/ForgotPasswordPage'
 import { LoginPage } from '@/features/auth/pages/LoginPage'
 import { MfaSetupPage } from '@/features/auth/pages/MfaSetupPage'
 import { SecurityPage } from '@/features/auth/pages/SecurityPage'
+import { ChurchDetailPage } from '@/features/churches/pages/ChurchDetailPage'
+import { ChurchesListPage } from '@/features/churches/pages/ChurchesListPage'
 import { DashboardPage } from '@/features/dashboard/pages/DashboardPage'
 import { ContributionPaymentsPage } from '@/features/payments/contributions/pages/ContributionPaymentsPage'
 import { SignaturePaymentsPage } from '@/features/payments/signatures/pages/SignaturePaymentsPage'
@@ -39,6 +41,8 @@ export function AppRouter() {
             <Route element={<MfaGuard />}>
               <Route element={<AdminLayout />}>
                 <Route index element={<DashboardPage />} />
+                <Route path="/eglises" element={<ChurchesListPage />} />
+                <Route path="/eglises/:id" element={<ChurchDetailPage />} />
                 <Route path="/utilisateurs" element={<UsersListPage />} />
                 <Route path="/paiements/signatures" element={<SignaturePaymentsPage />} />
                 <Route path="/paiements/contributions" element={<ContributionPaymentsPage />} />
