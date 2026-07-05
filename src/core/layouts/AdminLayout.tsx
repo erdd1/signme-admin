@@ -4,6 +4,7 @@ import {
   CreditCard,
   LayoutDashboard,
   LogOut,
+  Newspaper,
   ShieldAlert,
   ShieldCheck,
   UserCog,
@@ -39,6 +40,7 @@ const topNavItems = [
   { label: 'Tableau de bord', to: '/', icon: LayoutDashboard },
   { label: 'Églises', to: '/eglises', icon: Church },
   { label: 'Utilisateurs', to: '/utilisateurs', icon: Users },
+  { label: 'Publications', to: '/publications', icon: Newspaper },
 ]
 
 const bottomNavItems = [
