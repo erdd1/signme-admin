@@ -16,6 +16,7 @@ import { DashboardPage } from '@/features/dashboard/pages/DashboardPage'
 import { ContributionPaymentsPage } from '@/features/payments/contributions/pages/ContributionPaymentsPage'
 import { SignaturePaymentsPage } from '@/features/payments/signatures/pages/SignaturePaymentsPage'
 import { PublicationsListPage } from '@/features/publications/pages/PublicationsListPage'
+import { SignaturesListPage } from '@/features/signatures/pages/SignaturesListPage'
 import { UsersListPage } from '@/features/users/pages/UsersListPage'
 
 import { NotFoundPage } from './NotFoundPage'
@@ -46,6 +47,7 @@ export function AppRouter() {
                 <Route path="/eglises/:id" element={<ChurchDetailPage />} />
                 <Route path="/utilisateurs" element={<UsersListPage />} />
                 <Route path="/publications" element={<PublicationsListPage />} />
+                <Route path="/signatures" element={<SignaturesListPage />} />
                 <Route path="/paiements/signatures" element={<SignaturePaymentsPage />} />
                 <Route path="/paiements/contributions" element={<ContributionPaymentsPage />} />
                 <Route path="/compte" element={<AccountPage />} />

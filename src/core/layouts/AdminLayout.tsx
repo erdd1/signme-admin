@@ -2,6 +2,7 @@ import {
   ChevronRight,
   Church,
   CreditCard,
+  FileSignature,
   LayoutDashboard,
   LogOut,
   Newspaper,
@@ -41,6 +42,7 @@ const topNavItems = [
   { label: 'Églises', to: '/eglises', icon: Church },
   { label: 'Utilisateurs', to: '/utilisateurs', icon: Users },
   { label: 'Publications', to: '/publications', icon: Newspaper },
+  { label: 'Cartes de signature', to: '/signatures', icon: FileSignature },
 ]
 
 const bottomNavItems = [
