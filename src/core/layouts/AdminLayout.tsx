@@ -3,6 +3,7 @@ import {
   Church,
   CreditCard,
   FileSignature,
+  HandCoins,
   LayoutDashboard,
   LogOut,
   Newspaper,
@@ -43,6 +44,7 @@ const topNavItems = [
   { label: 'Utilisateurs', to: '/utilisateurs', icon: Users },
   { label: 'Publications', to: '/publications', icon: Newspaper },
   { label: 'Cartes de signature', to: '/signatures', icon: FileSignature },
+  { label: 'Événements', to: '/evenements', icon: HandCoins },
 ]
 
 const bottomNavItems = [

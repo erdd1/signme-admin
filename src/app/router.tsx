@@ -13,6 +13,8 @@ import { SecurityPage } from '@/features/auth/pages/SecurityPage'
 import { ChurchDetailPage } from '@/features/churches/pages/ChurchDetailPage'
 import { ChurchesListPage } from '@/features/churches/pages/ChurchesListPage'
 import { DashboardPage } from '@/features/dashboard/pages/DashboardPage'
+import { EvenementDetailPage } from '@/features/evenements/pages/EvenementDetailPage'
+import { EvenementsListPage } from '@/features/evenements/pages/EvenementsListPage'
 import { ContributionPaymentsPage } from '@/features/payments/contributions/pages/ContributionPaymentsPage'
 import { SignaturePaymentsPage } from '@/features/payments/signatures/pages/SignaturePaymentsPage'
 import { PublicationsListPage } from '@/features/publications/pages/PublicationsListPage'
@@ -48,6 +50,8 @@ export function AppRouter() {
                 <Route path="/utilisateurs" element={<UsersListPage />} />
                 <Route path="/publications" element={<PublicationsListPage />} />
                 <Route path="/signatures" element={<SignaturesListPage />} />
+                <Route path="/evenements" element={<EvenementsListPage />} />
+                <Route path="/evenements/:uuid" element={<EvenementDetailPage />} />
                 <Route path="/paiements/signatures" element={<SignaturePaymentsPage />} />
                 <Route path="/paiements/contributions" element={<ContributionPaymentsPage />} />
                 <Route path="/compte" element={<AccountPage />} />
