@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { toast } from 'sonner'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -20,10 +21,19 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { getApiErrorMessage } from '@/core/api/errors'
+import { PaymentActionsMenu } from '@/features/payments/shared/components/PaymentActionsMenu'
+import { PaymentDetailDialog } from '@/features/payments/shared/components/PaymentDetailDialog'
+import { PaymentSyncLogsDialog } from '@/features/payments/shared/components/PaymentSyncLogsDialog'
 import { useChurches } from '@/features/users/hooks/useChurches'
 
 import { SignaturePaymentStatusBadge } from '../components/SignaturePaymentStatusBadge'
 import { UserHistoryDialog } from '../components/UserHistoryDialog'
+import { usePaymentDetail } from '../hooks/usePaymentDetail'
+import { usePaymentEvents } from '../hooks/usePaymentEvents'
+import { usePaymentReceipt } from '../hooks/usePaymentReceipt'
+import { usePaymentSyncLogs } from '../hooks/usePaymentSyncLogs'
+import { useRecheckPayment } from '../hooks/useRecheckPayment'
 import { useSignaturePaymentLogs } from '../hooks/useSignaturePaymentLogs'
 import { useSignaturePaymentStats } from '../hooks/useSignaturePaymentStats'
 import {
@@ -56,6 +66,12 @@ export function SignaturePaymentsPage() {
   const [historyUserId, setHistoryUserId] = useState<number | undefined>(undefined)
   const [historyOpen, setHistoryOpen] = useState(false)
 
+  const [detailTransactionId, setDetailTransactionId] = useState<number | undefined>(undefined)
+  const [detailOpen, setDetailOpen] = useState(false)
+  const [logsTransactionId, setLogsTransactionId] = useState<number | undefined>(undefined)
+  const [logsOpen, setLogsOpen] = useState(false)
+  const [logsPage, setLogsPage] = useState(1)
+
   const statsFilters = useMemo(
     () => ({
       churchId,
@@ -79,9 +95,60 @@ export function SignaturePaymentsPage() {
   const stats = useSignaturePaymentStats(statsFilters)
   const logs = useSignaturePaymentLogs(logFilters)
 
+  const detailQuery = usePaymentDetail(detailTransactionId, detailOpen)
+  const eventsQuery = usePaymentEvents(detailTransactionId, detailOpen)
+  const syncLogsQuery = usePaymentSyncLogs(logsTransactionId, logsPage, logsOpen)
+  const recheckPayment = useRecheckPayment()
+  const paymentReceipt = usePaymentReceipt()
+
   function openHistory(userId: number) {
     setHistoryUserId(userId)
     setHistoryOpen(true)
+  }
+
+  function openDetail(transactionId: number) {
+    setDetailTransactionId(transactionId)
+    setDetailOpen(true)
+  }
+
+  function openLogs(transactionId: number) {
+    setLogsTransactionId(transactionId)
+    setLogsPage(1)
+    setLogsOpen(true)
+  }
+
+  async function handleRecheck(transactionId: number) {
+    try {
+      await recheckPayment.mutateAsync(transactionId)
+      toast.success('Statut revérifié avec succès.')
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, 'Impossible de revérifier ce paiement.'))
+    }
+  }
+
+  async function handleViewReceipt(transactionId: number) {
+    try {
+      const blob = await paymentReceipt.mutateAsync({ transactionId, download: false })
+      const url = URL.createObjectURL(blob)
+      window.open(url, '_blank')
+      setTimeout(() => URL.revokeObjectURL(url), 60_000)
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, 'Impossible de générer le reçu.'))
+    }
+  }
+
+  async function handleExportPdf(transactionId: number, reference: string | null) {
+    try {
+      const blob = await paymentReceipt.mutateAsync({ transactionId, download: true })
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `recu-${reference ?? transactionId}.pdf`
+      link.click()
+      URL.revokeObjectURL(url)
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, "Impossible d'exporter le reçu."))
+    }
   }
 
   return (
@@ -246,10 +313,23 @@ export function SignaturePaymentsPage() {
                       <TableCell>
                         <SignaturePaymentStatusBadge status={log.status} />
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="flex items-center justify-end gap-1">
                         <Button variant="ghost" size="sm" onClick={() => openHistory(log.userId)}>
                           Historique
                         </Button>
+                        <PaymentActionsMenu
+                          disabled={log.transactionId === null}
+                          disabledReason="Signature présentielle — aucune transaction de paiement associée."
+                          canRecheck={log.status === 'pending'}
+                          isRechecking={recheckPayment.isPending}
+                          onViewDetail={() => openDetail(log.transactionId!)}
+                          onViewReceipt={() => void handleViewReceipt(log.transactionId!)}
+                          onRecheck={() => void handleRecheck(log.transactionId!)}
+                          onViewLogs={() => openLogs(log.transactionId!)}
+                          onExportPdf={() =>
+                            void handleExportPdf(log.transactionId!, log.paymentReference)
+                          }
+                        />
                       </TableCell>
                     </TableRow>
                   ))}
@@ -286,6 +366,24 @@ export function SignaturePaymentsPage() {
       </Card>
 
       <UserHistoryDialog userId={historyUserId} open={historyOpen} onOpenChange={setHistoryOpen} />
+
+      <PaymentDetailDialog
+        open={detailOpen}
+        onOpenChange={setDetailOpen}
+        detail={detailQuery.data}
+        events={eventsQuery.data?.events}
+        isLoading={detailQuery.isLoading || eventsQuery.isLoading}
+      />
+
+      <PaymentSyncLogsDialog
+        open={logsOpen}
+        onOpenChange={setLogsOpen}
+        logs={syncLogsQuery.data?.logs}
+        pagination={syncLogsQuery.data?.pagination}
+        isLoading={syncLogsQuery.isLoading}
+        page={logsPage}
+        onPageChange={setLogsPage}
+      />
     </div>
   )
 }

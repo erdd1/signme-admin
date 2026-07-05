@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { toast } from 'sonner'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -20,8 +21,17 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { getApiErrorMessage } from '@/core/api/errors'
+import { PaymentActionsMenu } from '@/features/payments/shared/components/PaymentActionsMenu'
+import { PaymentDetailDialog } from '@/features/payments/shared/components/PaymentDetailDialog'
+import { PaymentSyncLogsDialog } from '@/features/payments/shared/components/PaymentSyncLogsDialog'
 
+import { useContributionDetail } from '../hooks/useContributionDetail'
+import { useContributionEvents } from '../hooks/useContributionEvents'
 import { useContributionPayments } from '../hooks/useContributionPayments'
+import { useContributionReceipt } from '../hooks/useContributionReceipt'
+import { useContributionSyncLogs } from '../hooks/useContributionSyncLogs'
+import { useRecheckContribution } from '../hooks/useRecheckContribution'
 import type { ContributionStatus } from '../types'
 
 const ALL = '__all__'
@@ -44,6 +54,63 @@ export function ContributionPaymentsPage() {
   const [status, setStatus] = useState<ContributionStatus | typeof ALL>(ALL)
 
   const contributions = useContributionPayments(page)
+
+  const [detailUuid, setDetailUuid] = useState<string | undefined>(undefined)
+  const [detailOpen, setDetailOpen] = useState(false)
+  const [logsUuid, setLogsUuid] = useState<string | undefined>(undefined)
+  const [logsOpen, setLogsOpen] = useState(false)
+  const [logsPage, setLogsPage] = useState(1)
+
+  const detailQuery = useContributionDetail(detailUuid, detailOpen)
+  const eventsQuery = useContributionEvents(detailUuid, detailOpen)
+  const syncLogsQuery = useContributionSyncLogs(logsUuid, logsPage, logsOpen)
+  const recheckContribution = useRecheckContribution()
+  const contributionReceipt = useContributionReceipt()
+
+  function openDetail(uuid: string) {
+    setDetailUuid(uuid)
+    setDetailOpen(true)
+  }
+
+  function openLogs(uuid: string) {
+    setLogsUuid(uuid)
+    setLogsPage(1)
+    setLogsOpen(true)
+  }
+
+  async function handleRecheck(uuid: string) {
+    try {
+      await recheckContribution.mutateAsync(uuid)
+      toast.success('Statut revérifié avec succès.')
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, 'Impossible de revérifier cette contribution.'))
+    }
+  }
+
+  async function handleViewReceipt(uuid: string) {
+    try {
+      const blob = await contributionReceipt.mutateAsync({ uuid, download: false })
+      const url = URL.createObjectURL(blob)
+      window.open(url, '_blank')
+      setTimeout(() => URL.revokeObjectURL(url), 60_000)
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, 'Impossible de générer le reçu.'))
+    }
+  }
+
+  async function handleExportPdf(uuid: string, reference: string | null) {
+    try {
+      const blob = await contributionReceipt.mutateAsync({ uuid, download: true })
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `recu-${reference ?? uuid}.pdf`
+      link.click()
+      URL.revokeObjectURL(url)
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, "Impossible d'exporter le reçu."))
+    }
+  }
 
   const filtered = useMemo(() => {
     if (!contributions.data) return []
@@ -112,6 +179,7 @@ export function ContributionPaymentsPage() {
                     <TableHead>Méthode</TableHead>
                     <TableHead>Statut</TableHead>
                     <TableHead>Note</TableHead>
+                    <TableHead />
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -144,6 +212,17 @@ export function ContributionPaymentsPage() {
                         <Badge variant={STATUS_VARIANTS[c.statut]}>{STATUS_LABELS[c.statut]}</Badge>
                       </TableCell>
                       <TableCell>{c.note ?? '—'}</TableCell>
+                      <TableCell className="text-right">
+                        <PaymentActionsMenu
+                          canRecheck={c.statut === 'pending'}
+                          isRechecking={recheckContribution.isPending}
+                          onViewDetail={() => openDetail(c.uuid)}
+                          onViewReceipt={() => void handleViewReceipt(c.uuid)}
+                          onRecheck={() => void handleRecheck(c.uuid)}
+                          onViewLogs={() => openLogs(c.uuid)}
+                          onExportPdf={() => void handleExportPdf(c.uuid, c.paymentReference)}
+                        />
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -177,6 +256,24 @@ export function ContributionPaymentsPage() {
           )}
         </CardContent>
       </Card>
+
+      <PaymentDetailDialog
+        open={detailOpen}
+        onOpenChange={setDetailOpen}
+        detail={detailQuery.data}
+        events={eventsQuery.data?.events}
+        isLoading={detailQuery.isLoading || eventsQuery.isLoading}
+      />
+
+      <PaymentSyncLogsDialog
+        open={logsOpen}
+        onOpenChange={setLogsOpen}
+        logs={syncLogsQuery.data?.logs}
+        pagination={syncLogsQuery.data?.pagination}
+        isLoading={syncLogsQuery.isLoading}
+        page={logsPage}
+        onPageChange={setLogsPage}
+      />
     </div>
   )
 }
