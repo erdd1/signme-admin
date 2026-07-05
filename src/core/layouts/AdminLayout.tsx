@@ -9,6 +9,7 @@ import {
   Newspaper,
   ShieldAlert,
   ShieldCheck,
+  UserCheck,
   UserCog,
   Users,
 } from 'lucide-react'
@@ -45,6 +46,7 @@ const topNavItems = [
   { label: 'Publications', to: '/publications', icon: Newspaper },
   { label: 'Cartes de signature', to: '/signatures', icon: FileSignature },
   { label: 'Événements', to: '/evenements', icon: HandCoins },
+  { label: "Désignations d'anciens", to: '/anciens-designations', icon: UserCheck },
 ]
 
 const bottomNavItems = [

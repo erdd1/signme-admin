@@ -5,6 +5,7 @@ import { ProtectedRoute } from '@/core/guards/ProtectedRoute'
 import { RoleGuard } from '@/core/guards/RoleGuard'
 import { AdminLayout } from '@/core/layouts/AdminLayout'
 import { AuthLayout } from '@/core/layouts/AuthLayout'
+import { AnciensDesignationsPage } from '@/features/anciens-designations/pages/AnciensDesignationsPage'
 import { AccountPage } from '@/features/auth/pages/AccountPage'
 import { ForgotPasswordPage } from '@/features/auth/pages/ForgotPasswordPage'
 import { LoginPage } from '@/features/auth/pages/LoginPage'
@@ -52,6 +53,7 @@ export function AppRouter() {
                 <Route path="/signatures" element={<SignaturesListPage />} />
                 <Route path="/evenements" element={<EvenementsListPage />} />
                 <Route path="/evenements/:uuid" element={<EvenementDetailPage />} />
+                <Route path="/anciens-designations" element={<AnciensDesignationsPage />} />
                 <Route path="/paiements/signatures" element={<SignaturePaymentsPage />} />
                 <Route path="/paiements/contributions" element={<ContributionPaymentsPage />} />
                 <Route path="/compte" element={<AccountPage />} />
