@@ -37,6 +37,8 @@ function mapLoginResponseToSession(data: LoginResponseData): AuthSession {
       estDeService: data.est_de_service,
       photoUrl: data.photoUrl,
       church: data.church ?? null,
+      isSuperAdmin: data.isSuperAdmin,
+      permissions: data.permissions ?? [],
     },
   }
 }

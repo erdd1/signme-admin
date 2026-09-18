@@ -6,6 +6,34 @@ export interface ChurchSummary {
   ville: string
 }
 
+/**
+ * Modules admin pouvant être accordés à un mini-admin — doit rester en
+ * miroir exact de App\Core\Services\AdminResourceRegistry côté backend.
+ * "Système" n'y figure volontairement pas : réservé au super admin,
+ * jamais accordable.
+ */
+export type AdminResourceKey =
+  | 'users'
+  | 'lookups'
+  | 'churches'
+  | 'about_church'
+  | 'signatures'
+  | 'anciens_designations'
+  | 'publications'
+  | 'evenements'
+  | 'sorties_financieres'
+  | 'celebrations'
+  | 'payments'
+  | 'rapports'
+
+export interface AdminPermissionGrant {
+  resource: AdminResourceKey
+  can_view: boolean
+  can_create: boolean
+  can_update: boolean
+  can_delete: boolean
+}
+
 export interface AuthUser {
   id: number
   nom: string
@@ -16,6 +44,8 @@ export interface AuthUser {
   estDeService: boolean
   photoUrl: string | null
   church: ChurchSummary | null
+  isSuperAdmin: boolean
+  permissions: AdminPermissionGrant[]
 }
 
 export interface AuthSession {
@@ -37,6 +67,8 @@ export interface LoginResponseData {
   photoUrl: string | null
   access_token: string
   mfaSetupRequired: boolean
+  isSuperAdmin: boolean
+  permissions?: AdminPermissionGrant[]
   refresh_token?: string
   token_type?: string
   expires_in?: number

@@ -11,7 +11,7 @@ import { Field, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field
 import { Input } from '@/components/ui/input'
 import { getApiErrorMessage } from '@/core/api/errors'
 import { useConfirmMfa, useEnableMfa } from '@/features/auth/hooks/useMfa'
-import { type OtpFormValues, otpSchema } from '@/features/auth/schemas'
+import { type LoginOtpFormValues, loginOtpSchema } from '@/features/auth/schemas'
 import { useAuthStore } from '@/features/auth/store/authStore'
 
 type Step = 'intro' | 'backup-codes' | 'confirm'
@@ -26,8 +26,11 @@ export function MfaSetupPage() {
   const setMfaSetupRequired = useAuthStore((state) => state.setMfaSetupRequired)
   const navigate = useNavigate()
 
-  const otpForm = useForm<OtpFormValues>({
-    resolver: zodResolver(otpSchema),
+  // Accepte aussi un code de secours (8 caractères) en plus du code à 6
+  // chiffres reçu par email — mêmes codes que ceux affichés à l'étape
+  // précédente, utile si l'email tarde à arriver.
+  const otpForm = useForm<LoginOtpFormValues>({
+    resolver: zodResolver(loginOtpSchema),
     defaultValues: { otp: '' },
   })
 
@@ -46,7 +49,7 @@ export function MfaSetupPage() {
     toast.success('Codes de secours copiés.')
   }
 
-  async function onSubmitOtp(values: OtpFormValues) {
+  async function onSubmitOtp(values: LoginOtpFormValues) {
     try {
       await confirmMfa.mutateAsync(values.otp)
       setMfaSetupRequired(false)
@@ -128,12 +131,11 @@ export function MfaSetupPage() {
           <form onSubmit={(event) => void otpForm.handleSubmit(onSubmitOtp)(event)}>
             <FieldGroup>
               <Field data-invalid={!!otpForm.formState.errors.otp}>
-                <FieldLabel htmlFor="otp">Code reçu par email</FieldLabel>
+                <FieldLabel htmlFor="otp">Code reçu par email ou code de secours</FieldLabel>
                 <Input
                   id="otp"
-                  inputMode="numeric"
                   autoComplete="one-time-code"
-                  maxLength={6}
+                  maxLength={8}
                   aria-invalid={!!otpForm.formState.errors.otp}
                   {...otpForm.register('otp')}
                 />

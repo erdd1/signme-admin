@@ -3,14 +3,17 @@ import { BrowserRouter, Route, Routes } from 'react-router'
 import { MfaGuard, MfaSetupRoute } from '@/core/guards/MfaGuard'
 import { ProtectedRoute } from '@/core/guards/ProtectedRoute'
 import { RoleGuard } from '@/core/guards/RoleGuard'
+import { SuperAdminGuard } from '@/core/guards/SuperAdminGuard'
 import { AdminLayout } from '@/core/layouts/AdminLayout'
 import { AuthLayout } from '@/core/layouts/AuthLayout'
+import { AdministrateursPage } from '@/features/administrateurs/pages/AdministrateursPage'
 import { AnciensDesignationsPage } from '@/features/anciens-designations/pages/AnciensDesignationsPage'
 import { AccountPage } from '@/features/auth/pages/AccountPage'
 import { ForgotPasswordPage } from '@/features/auth/pages/ForgotPasswordPage'
 import { LoginPage } from '@/features/auth/pages/LoginPage'
 import { MfaSetupPage } from '@/features/auth/pages/MfaSetupPage'
 import { SecurityPage } from '@/features/auth/pages/SecurityPage'
+import { CelebrationsPage } from '@/features/celebrations/pages/CelebrationsPage'
 import { ChurchDetailPage } from '@/features/churches/pages/ChurchDetailPage'
 import { ChurchesListPage } from '@/features/churches/pages/ChurchesListPage'
 import { DashboardPage } from '@/features/dashboard/pages/DashboardPage'
@@ -20,6 +23,7 @@ import { ContributionPaymentsPage } from '@/features/payments/contributions/page
 import { SignaturePaymentsPage } from '@/features/payments/signatures/pages/SignaturePaymentsPage'
 import { PublicationsListPage } from '@/features/publications/pages/PublicationsListPage'
 import { SignaturesListPage } from '@/features/signatures/pages/SignaturesListPage'
+import { SortiesFinancieresPage } from '@/features/sorties-financieres/pages/SortiesFinancieresPage'
 import { SystemePage } from '@/features/systeme/pages/SystemePage'
 import { UsersListPage } from '@/features/users/pages/UsersListPage'
 
@@ -54,12 +58,18 @@ export function AppRouter() {
                 <Route path="/signatures" element={<SignaturesListPage />} />
                 <Route path="/evenements" element={<EvenementsListPage />} />
                 <Route path="/evenements/:uuid" element={<EvenementDetailPage />} />
+                <Route path="/sorties-financieres" element={<SortiesFinancieresPage />} />
                 <Route path="/anciens-designations" element={<AnciensDesignationsPage />} />
+                <Route path="/celebrations" element={<CelebrationsPage />} />
                 <Route path="/paiements/signatures" element={<SignaturePaymentsPage />} />
                 <Route path="/paiements/contributions" element={<ContributionPaymentsPage />} />
                 <Route path="/compte" element={<AccountPage />} />
                 <Route path="/securite" element={<SecurityPage />} />
-                <Route path="/systeme" element={<SystemePage />} />
+
+                <Route element={<SuperAdminGuard />}>
+                  <Route path="/systeme" element={<SystemePage />} />
+                  <Route path="/administrateurs" element={<AdministrateursPage />} />
+                </Route>
               </Route>
             </Route>
           </Route>
