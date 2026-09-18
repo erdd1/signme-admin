@@ -20,6 +20,7 @@ import { ContributionPaymentsPage } from '@/features/payments/contributions/page
 import { SignaturePaymentsPage } from '@/features/payments/signatures/pages/SignaturePaymentsPage'
 import { PublicationsListPage } from '@/features/publications/pages/PublicationsListPage'
 import { SignaturesListPage } from '@/features/signatures/pages/SignaturesListPage'
+import { SystemePage } from '@/features/systeme/pages/SystemePage'
 import { UsersListPage } from '@/features/users/pages/UsersListPage'
 
 import { NotFoundPage } from './NotFoundPage'
@@ -58,6 +59,7 @@ export function AppRouter() {
                 <Route path="/paiements/contributions" element={<ContributionPaymentsPage />} />
                 <Route path="/compte" element={<AccountPage />} />
                 <Route path="/securite" element={<SecurityPage />} />
+                <Route path="/systeme" element={<SystemePage />} />
               </Route>
             </Route>
           </Route>

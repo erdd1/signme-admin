@@ -7,6 +7,7 @@ import {
   LayoutDashboard,
   LogOut,
   Newspaper,
+  ServerCog,
   ShieldAlert,
   ShieldCheck,
   UserCheck,
@@ -52,6 +53,7 @@ const topNavItems = [
 const bottomNavItems = [
   { label: 'Mon compte', to: '/compte', icon: UserCog },
   { label: 'Sécurité', to: '/securite', icon: ShieldAlert },
+  { label: 'Système', to: '/systeme', icon: ServerCog },
 ]
 
 const paymentsSubItems = [
