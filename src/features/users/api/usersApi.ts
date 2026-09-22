@@ -11,6 +11,7 @@ import type {
   GroupeResponseData,
   Quartier,
   QuartierResponseData,
+  Sexe,
   UpdateUserPayload,
   User,
   UserFilters,
@@ -35,6 +36,9 @@ function mapUser(u: UserResponseData): User {
     dateConfirmation: u.dateConfirmation,
     lieuConfirmation: u.lieuConfirmation,
     sexe: u.sexe as User['sexe'],
+    matricule: u.matricule,
+    estCommuniant: u.estCommuniant,
+    communiantDepuis: u.communiantDepuis,
     dateNaissance: u.dateNaissance,
     quartier: u.quartier,
     ville: u.ville,
@@ -117,6 +121,14 @@ export async function getUserStats(churchId: number): Promise<UserStats> {
   }
 }
 
+export async function getNextMatricule(churchId: number, sexe: Sexe): Promise<string> {
+  const { data } = await httpClient.get<ApiEnvelope<{ matricule: string }>>(
+    '/admin/users/next-matricule',
+    { params: { church_id: churchId, sexe } },
+  )
+  return data.data.matricule
+}
+
 function toRequestBody(payload: CreateUserPayload | UpdateUserPayload) {
   return {
     nom: payload.nom,
@@ -128,6 +140,8 @@ function toRequestBody(payload: CreateUserPayload | UpdateUserPayload) {
     profession: payload.profession,
     originaireDe: payload.originaireDe,
     sexe: payload.sexe,
+    matricule: payload.matricule,
+    estCommuniant: payload.estCommuniant,
     dateNaissance: payload.dateNaissance,
     dateConfirmation: payload.dateConfirmation,
     lieuConfirmation: payload.lieuConfirmation,

@@ -301,6 +301,7 @@ export function UsersListPage() {
                     <TableHeader>
                       <TableRow>
                         <TableHead>Membre</TableHead>
+                        <TableHead>Identifiant</TableHead>
                         <TableHead>Rôle</TableHead>
                         <TableHead>Église</TableHead>
                         <TableHead>Statut</TableHead>
@@ -323,6 +324,9 @@ export function UsersListPage() {
                                 <div className="text-muted-foreground text-xs">{user.email}</div>
                               </div>
                             </div>
+                          </TableCell>
+                          <TableCell className="font-mono text-sm">
+                            {user.matricule ?? '—'}
                           </TableCell>
                           <TableCell>
                             <Badge variant="outline">{user.role}</Badge>

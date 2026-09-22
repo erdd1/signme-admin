@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Dices } from 'lucide-react'
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 
@@ -28,6 +28,7 @@ import { UserPhotoUpload } from '@/features/users/components/UserPhotoUpload'
 import { useChurches } from '@/features/users/hooks/useChurches'
 import { useCreateUser } from '@/features/users/hooks/useCreateUser'
 import { useGroupes } from '@/features/users/hooks/useGroupes'
+import { useNextMatricule } from '@/features/users/hooks/useNextMatricule'
 import { useQuartiers } from '@/features/users/hooks/useQuartiers'
 import { useUpdateUser } from '@/features/users/hooks/useUpdateUser'
 import { useVilles } from '@/features/users/hooks/useVilles'
@@ -72,6 +73,8 @@ function toFormDefaults(user?: User): CreateUserFormValues {
     profession: user?.profession ?? undefined,
     originaireDe: user?.originaireDe ?? undefined,
     sexe: user?.sexe ?? undefined,
+    matricule: user?.matricule ?? undefined,
+    estCommuniant: user?.estCommuniant,
     dateNaissance: user?.dateNaissance ?? undefined,
     dateConfirmation: user?.dateConfirmation ?? undefined,
     lieuConfirmation: user?.lieuConfirmation ?? undefined,
@@ -87,6 +90,8 @@ export function UserFormDialog({ open, onOpenChange, user }: UserFormDialogProps
   const churches = useChurches()
   const createUser = useCreateUser()
   const updateUser = useUpdateUser()
+  const nextMatricule = useNextMatricule()
+  const formRef = useRef<HTMLFormElement>(null)
 
   const form = useForm<CreateUserFormValues>({
     // Le schéma dépend du mode (création exige un mot de passe fort, pas
@@ -107,6 +112,7 @@ export function UserFormDialog({ open, onOpenChange, user }: UserFormDialogProps
   const villes = useVilles(effectiveChurchId)
   const groupes = useGroupes(effectiveChurchId)
   const groupeIds = form.watch('groupeIds')
+  const role = form.watch('role')
 
   function toggleGroupe(id: number, checked: boolean) {
     const current = form.getValues('groupeIds')
@@ -118,6 +124,20 @@ export function UserFormDialog({ open, onOpenChange, user }: UserFormDialogProps
 
   function handleGeneratePassword() {
     form.setValue('password', generateStrongPassword(), { shouldValidate: true })
+  }
+
+  async function handleGenerateMatricule() {
+    const sexe = form.getValues('sexe')
+    if (!effectiveChurchId || !sexe) {
+      toast.error("Sélectionnez d'abord une église et un sexe.")
+      return
+    }
+    try {
+      const matricule = await nextMatricule.mutateAsync({ churchId: effectiveChurchId, sexe })
+      form.setValue('matricule', matricule, { shouldValidate: true })
+    } catch (error) {
+      toast.error(getApiErrorMessage(error))
+    }
   }
 
   async function onSubmit(values: CreateUserFormValues) {
@@ -137,6 +157,19 @@ export function UserFormDialog({ open, onOpenChange, user }: UserFormDialogProps
     }
   }
 
+  // Le formulaire est long (scroll interne) : sans ce retour, un champ en
+  // erreur hors écran (ex. Identifiant, requis dès qu'une église est
+  // choisie) bloque silencieusement la soumission — au clic sur "Créer",
+  // rien ne se passe visiblement pour l'admin.
+  function onInvalid() {
+    toast.error('Certains champs doivent être corrigés avant de continuer.')
+    requestAnimationFrame(() => {
+      formRef.current
+        ?.querySelector('[data-invalid="true"]')
+        ?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    })
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-2xl">
@@ -153,7 +186,8 @@ export function UserFormDialog({ open, onOpenChange, user }: UserFormDialogProps
 
         <form
           id="user-form"
-          onSubmit={(event) => void form.handleSubmit(onSubmit)(event)}
+          ref={formRef}
+          onSubmit={(event) => void form.handleSubmit(onSubmit, onInvalid)(event)}
           className="grid gap-4"
         >
           <FieldGroup className="grid grid-cols-2 gap-4">
@@ -178,7 +212,15 @@ export function UserFormDialog({ open, onOpenChange, user }: UserFormDialogProps
                 control={form.control}
                 name="role"
                 render={({ field }) => (
-                  <Select value={field.value} onValueChange={field.onChange}>
+                  <Select
+                    value={field.value}
+                    onValueChange={(value) => {
+                      field.onChange(value)
+                      // Les autres rôles sont et seront toujours communiants
+                      // (imposé côté backend) — pas de valeur à conserver.
+                      if (value !== 'paroissien') form.setValue('estCommuniant', undefined)
+                    }}
+                  >
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Choisir un rôle" />
                     </SelectTrigger>
@@ -196,6 +238,37 @@ export function UserFormDialog({ open, onOpenChange, user }: UserFormDialogProps
                 errors={form.formState.errors.role ? [form.formState.errors.role] : undefined}
               />
             </Field>
+
+            {role === 'paroissien' && (
+              <Field className="col-span-2" data-invalid={!!form.formState.errors.estCommuniant}>
+                <FieldLabel>Statut</FieldLabel>
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant={form.watch('estCommuniant') === true ? 'default' : 'outline'}
+                    className="flex-1"
+                    onClick={() => form.setValue('estCommuniant', true, { shouldValidate: true })}
+                  >
+                    Communiant
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={form.watch('estCommuniant') === false ? 'default' : 'outline'}
+                    className="flex-1"
+                    onClick={() => form.setValue('estCommuniant', false, { shouldValidate: true })}
+                  >
+                    Non communiant
+                  </Button>
+                </div>
+                <FieldError
+                  errors={
+                    form.formState.errors.estCommuniant
+                      ? [form.formState.errors.estCommuniant]
+                      : undefined
+                  }
+                />
+              </Field>
+            )}
 
             <Field data-invalid={!!form.formState.errors.churchId}>
               <FieldLabel>Église</FieldLabel>
@@ -272,6 +345,31 @@ export function UserFormDialog({ open, onOpenChange, user }: UserFormDialogProps
                     </SelectContent>
                   </Select>
                 )}
+              />
+            </Field>
+            <Field data-invalid={!!form.formState.errors.matricule}>
+              <FieldLabel htmlFor="matricule">Identifiant</FieldLabel>
+              <div className="flex gap-2">
+                <Input
+                  id="matricule"
+                  placeholder="Ex. H011 ou F112"
+                  maxLength={4}
+                  className="font-mono uppercase"
+                  {...form.register('matricule')}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => void handleGenerateMatricule()}
+                  disabled={nextMatricule.isPending || !effectiveChurchId}
+                >
+                  <Dices /> Générer
+                </Button>
+              </div>
+              <FieldError
+                errors={
+                  form.formState.errors.matricule ? [form.formState.errors.matricule] : undefined
+                }
               />
             </Field>
             <Field>

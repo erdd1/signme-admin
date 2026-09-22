@@ -108,6 +108,9 @@ export interface User {
   dateConfirmation: string | null
   lieuConfirmation: string | null
   sexe: Sexe | null
+  matricule: string | null
+  estCommuniant: boolean
+  communiantDepuis: string | null
   dateNaissance: string | null
   quartier: QuartierRef | null
   ville: VilleRef | null
@@ -134,6 +137,9 @@ export interface UserResponseData {
   dateConfirmation: string | null
   lieuConfirmation: string | null
   sexe: string | null
+  matricule: string | null
+  estCommuniant: boolean
+  communiantDepuis: string | null
   dateNaissance: string | null
   quartier: QuartierRef | null
   ville: VilleRef | null
@@ -192,6 +198,8 @@ export interface CreateUserPayload {
   profession?: string
   originaireDe?: Region
   sexe?: Sexe
+  matricule?: string
+  estCommuniant?: boolean
   dateNaissance?: string
   dateConfirmation?: string
   lieuConfirmation?: string
